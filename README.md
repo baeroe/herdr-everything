@@ -14,7 +14,7 @@
 
 Search is fuzzy and word-based, e.g. `rand`, `split right`, `shop front`. Matches in the title count double.
 
-Keys: **↑↓** or **ctrl+p/n** select · **Enter** open · **ctrl+u** clear · **Esc / alt+space** close.
+Keys: **↑↓** or **ctrl+p/n** select · **Enter** open · **alt+backspace / ctrl+w** delete word · **ctrl+u** clear · **Esc / alt+space** close.
 
 ## Tools
 
