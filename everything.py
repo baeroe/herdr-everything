@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """herdr-everything: one search across agents, spaces, tabs, panes, herdr commands, tools and plugin actions."""
-import json, os, select, shutil, socket, subprocess, sys, termios, tty
+import json, os, re, select, shutil, socket, subprocess, sys, termios, tty
 
 import tools
 
@@ -12,6 +12,7 @@ ALT_SPACE = ("\x1b ", "\x1b[32;3u")
 ESC, ENTER = "\x1b", ("\r", "\n")
 UP_KEYS = ("\x1b[A", "\x10")  # ↑, ctrl+p
 DOWN_KEYS = ("\x1b[B", "\x0e")  # ↓, ctrl+n
+DELETE_WORD_KEYS = ("\x1b\x7f", "\x1b\x08", "\x1b[127;3u", "\x17")  # alt+backspace (ESC prefix / kitty), ctrl+w
 HERDR = os.environ.get("HERDR_BIN_PATH") or "herdr"
 SOCKET = os.environ.get("HERDR_SOCKET_PATH") or os.path.expanduser("~/.config/herdr/herdr.sock")
 TOOLS_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools.py")
@@ -236,6 +237,8 @@ def edit(text, key):
     """Apply a key to a single-line input; None if the key is not an edit."""
     if key in ("\x7f", "\x08"):
         return text[:-1]
+    if key in DELETE_WORD_KEYS:
+        return re.sub(r"\S*\s*$", "", text)
     if key == "\x15":  # ctrl+u
         return ""
     if key.isprintable():  # may be several chars when typing fast or pasting

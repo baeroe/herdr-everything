@@ -35,4 +35,11 @@ assert top("close pane") == "Close pane"
 assert top("worktree") == "New worktree"
 cmds = {i["title"]: i for i in items if i["kind"] == "cmd"}
 assert cmds["Close workspace"]["confirm"] and cmds["Rename pane"]["ask"]  # destructive asks, renames prompt
+# line editing: backspace, alt+backspace (ESC prefix and kitty), ctrl+w, ctrl+u
+assert everything.edit("foo bar", "\x7f") == "foo ba"
+assert everything.edit("foo bar", "\x1b\x7f") == "foo "
+assert everything.edit("foo bar ", "\x1b[127;3u") == "foo "
+assert everything.edit("foo", "\x17") == ""
+assert everything.edit("foo bar", "\x15") == ""
+assert everything.edit("foo", "\x1b[A") is None  # arrows are not edits
 print("ok")
