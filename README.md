@@ -1,6 +1,6 @@
-# herdr-omni
+# herdr-everything
 
-A "Search Everywhere" popup for [herdr](https://herdr.dev), inspired by JetBrains IDEs. Press **alt+space**, type a few letters and hit **Enter** to jump to whatever is on top.
+"Search Everywhere" for [herdr](https://herdr.dev), inspired by JetBrains IDEs, with a few dev tools built in. Press **alt+space**, type a few letters and hit **Enter**.
 
 | Kind | Enter does |
 |---|---|
@@ -8,29 +8,52 @@ A "Search Everywhere" popup for [herdr](https://herdr.dev), inspired by JetBrain
 | `space` | Focus the workspace |
 | `tab` | Focus the tab |
 | `pane` | Focus the pane (titled by its directory) |
-| `tool` | Run a toolbox tool inside the popup (only if a `herdr-toolbox` plugin is installed) |
-| `action` | Invoke an action of any installed plugin (lazydocker, Birdseye, …) |
+| `cmd` | Run a herdr command on the pane you came from: new/rename/close workspace or tab, split, zoom, focus/swap/resize in a direction, move pane to a new tab or workspace, rename/close pane, new worktree. Renames ask for a name, closing asks for confirmation. |
+| `tool` | Open a built-in tool right in the popup |
+| `action` | Invoke an action of any installed plugin |
 
-Search is fuzzy and word-based, e.g. `rand`, `shop front`, `docker`. Matches in the title count double.
+Search is fuzzy and word-based, e.g. `rand`, `split right`, `shop front`. Matches in the title count double.
 
 Keys: **↑↓** or **ctrl+p/n** select · **Enter** open · **ctrl+u** clear · **Esc / alt+space** close.
 
-Requirements: `python3` (standard library only). Toolbox entries only show up when a `herdr-toolbox` plugin providing `toolbox.py --list` is installed; otherwise they are simply left out.
+## Tools
+
+Things you would otherwise open a website for. The result is copied to the clipboard.
+
+| Key | Tool | |
+|---|---|---|
+| `j` | Format JSON | paste JSON (Enter = use clipboard), shown colored in `less` |
+| `r` | Random String | `u` `l` `d` `s` toggle upper/lower/digits/symbols, type a number or use `+-` `↑↓` for the length |
+| `u` | UUID v4 | |
+| `l` | Lorem Ipsum | `+-` or a number for paragraphs |
+
+In every tool: **Enter** copy & close · **Space** regenerate · **Esc** back · **alt+space** close. Open the tool menu directly via the `herdr-everything.tools` action, or just search for the tool.
+
+## Requirements
+
+`python3` (standard library only). Format JSON needs `jq`. Clipboard: `pbcopy` (macOS), `wl-copy` (Wayland) or `xclip` (X11).
 
 ## Install
 
 ```sh
-herdr plugin install baeroe/herdr-omni
+herdr plugin install baeroe/herdr-everything
 ```
 
-Add a key binding to `~/.config/herdr/config.toml`:
+Add key bindings to `~/.config/herdr/config.toml`:
 
 ```toml
 [[keys.command]]
 key = "alt+space"
 type = "plugin_action"
-command = "herdr-omni.open"
-description = "omni"
+command = "herdr-everything.open"
+description = "everything"
+
+# optional: tools menu
+[[keys.command]]
+key = "alt+t"
+type = "plugin_action"
+command = "herdr-everything.tools"
+description = "tools"
 ```
 
 Then run `herdr server reload-config`.
@@ -40,8 +63,9 @@ Why not double-Shift like JetBrains? Terminals never see a bare Shift press. If 
 ## Tests
 
 ```sh
-python3 test_search.py   # search ranking, no herdr needed (runs in CI)
-python3 test_omni.py     # drives the UI in a pseudo-terminal against a running herdr
+python3 test_search.py      # search ranking and commands, no herdr needed (runs in CI)
+python3 test_everything.py  # drives the search UI in a pseudo-terminal against a running herdr
+python3 test_tools.py       # drives the tools in a pseudo-terminal (macOS clipboard)
 ```
 
 ## License

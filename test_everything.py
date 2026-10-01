@@ -1,4 +1,4 @@
-"""Smoke test: runs omni.py in a pseudo-terminal against the running herdr. Usage: python3 test_omni.py"""
+"""Smoke test: runs everything.py in a pseudo-terminal against the running herdr. Usage: python3 test_everything.py"""
 import fcntl, json, os, pty, re, select, socket, struct, subprocess, termios, time
 
 os.environ["TERM"] = "xterm-256color"
@@ -8,7 +8,7 @@ def run(keys):
     """Send keys, return (still running?, output)."""
     pid, fd = pty.fork()
     if pid == 0:
-        os.execvp("python3", ["python3", "omni.py"])
+        os.execvp("python3", ["python3", "everything.py"])
     fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", 30, 120, 0, 0))
     out = b""
 
@@ -55,10 +55,10 @@ try:
     # a query without matches says so
     alive, out = run([b"zzzzqqq"])
     assert "no matches" in out
-    # toolbox tool from omni: "rand" + Enter opens Random String, Enter copies
+    # tool from the search: "rand" + Enter opens Random String, Enter copies
     alive, _ = run([b"rand", b"\r", b"\r"])
     assert not alive and re.fullmatch(r"[A-Za-z0-9]{32}", clip()), clip()
-    # focus: search the currently focused agent pane by title -> focus stays, omni closes.
+    # focus: search the currently focused agent pane by title -> focus stays, the popup closes.
     # (focusing another pane would switch your view.)
     snap = snapshot()
     me = next((a for a in snap["agents"] if a["pane_id"] == snap["focused_pane_id"]), None)
