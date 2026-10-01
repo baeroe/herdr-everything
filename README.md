@@ -20,8 +20,7 @@ Voraussetzungen: `python3` (nur Standardbibliothek). Toolbox-Einträge erscheine
 ## Installation
 
 ```sh
-git clone https://github.com/baeroe/herdr-omni
-herdr plugin link ./herdr-omni
+herdr plugin install baeroe/herdr-omni
 ```
 
 `~/.config/herdr/config.toml`:
