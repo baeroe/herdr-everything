@@ -1,0 +1,20 @@
+id = "herdr-omni"
+name = "Omni"
+version = "0.1.0"
+min_herdr_version = "0.8.0"
+description = "Eine Suche über Agents, Spaces, Tabs, Panes, Toolbox-Tools und Plugin-Aktionen. Tippen, Enter."
+platforms = ["macos", "linux"]
+
+[[panes]]
+id = "omni"
+title = "Omni"
+placement = "popup"
+width = "70%"
+height = "60%"
+command = ["python3", "omni.py"]
+
+[[actions]]
+id = "open"
+title = "Omni öffnen"
+description = "Suche über alles in herdr öffnen."
+command = ["sh", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin herdr-omni --entrypoint omni --focus"]
