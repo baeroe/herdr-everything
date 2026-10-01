@@ -1,11 +1,11 @@
-"""Smoke-Test: startet omni.py in einem Pseudo-Terminal gegen den laufenden herdr. Aufruf: python3 test_omni.py"""
+"""Smoke test: runs omni.py in a pseudo-terminal against the running herdr. Usage: python3 test_omni.py"""
 import fcntl, json, os, pty, re, select, socket, struct, subprocess, termios, time
 
 os.environ["TERM"] = "xterm-256color"
 
 
 def run(keys):
-    """Tasten senden, (noch am Leben?, Ausgabe) zurückgeben."""
+    """Send keys, return (still running?, output)."""
     pid, fd = pty.fork()
     if pid == 0:
         os.execvp("python3", ["python3", "omni.py"])
@@ -21,7 +21,7 @@ def run(keys):
                     out += os.read(fd, 65536)
                 except OSError:
                     return
-    drain(1.5)  # Daten laden
+    drain(1.5)  # load data
     for k in keys:
         os.write(fd, k)
         drain(0.5)
@@ -46,20 +46,20 @@ def snapshot():
 clip = lambda: subprocess.run(["pbpaste"], capture_output=True, text=True).stdout
 saved = clip()
 try:
-    # Suche zeigt Treffer, Esc / alt+space schließen, Tippen allein schließt nicht
+    # search shows results, Esc / alt+space close, typing alone does not
     alive, out = run([b"rand"])
     assert alive and "Random String" in out, out[-500:]
     assert not run([b"x", b"\x1b"])[0]
     assert not run([b"\x1b "])[0]
     assert not run([b"\x1b[32;3u"])[0]
-    # Backspace + ctrl+u: Suche "zzzzqqq" hat keine Treffer, nach ctrl+u wieder alles
+    # a query without matches says so
     alive, out = run([b"zzzzqqq"])
-    assert "keine Treffer" in out
-    # Toolbox-Tool direkt aus Omni: "rand" + Enter öffnet Random String, Enter kopiert
+    assert "no matches" in out
+    # toolbox tool from omni: "rand" + Enter opens Random String, Enter copies
     alive, _ = run([b"rand", b"\r", b"\r"])
     assert not alive and re.fullmatch(r"[A-Za-z0-9]{32}", clip()), clip()
-    # Fokus: das gerade fokussierte Agent-Pane über seinen Titel suchen -> Fokus bleibt gleich, Omni zu.
-    # (Ein anderes Pane zu fokussieren würde deine Ansicht umschalten.)
+    # focus: search the currently focused agent pane by title -> focus stays, omni closes.
+    # (focusing another pane would switch your view.)
     snap = snapshot()
     me = next((a for a in snap["agents"] if a["pane_id"] == snap["focused_pane_id"]), None)
     if me:

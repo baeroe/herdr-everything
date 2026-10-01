@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""herdr Omni: eine Suche über Agents, Spaces, Tabs, Panes, Toolbox-Tools und Plugin-Aktionen."""
+"""herdr Omni: one search across agents, spaces, tabs, panes, toolbox tools and plugin actions."""
 import json, os, select, shutil, socket, subprocess, sys, termios, tty
 
 DIM, BOLD, REV, RESET = "\033[2m", "\033[1m", "\033[7m", "\033[0m"
 KIND_COLORS = {"agent": "\033[35m", "space": "\033[34m", "tab": "\033[36m", "pane": "\033[37m",
                "tool": "\033[32m", "action": "\033[33m"}
-# alt+space kommt je nach Terminal als ESC-Prefix oder im kitty-Keyboard-Protokoll an.
+# Depending on the terminal, alt+space arrives as an ESC prefix or via the kitty keyboard protocol.
 CLOSE_KEYS = ("\x1b", "\x1b ", "\x1b[32;3u")
 UP_KEYS = ("\x1b[A", "\x10")  # ↑, ctrl+p
 DOWN_KEYS = ("\x1b[B", "\x0e")  # ↓, ctrl+n
@@ -18,7 +18,7 @@ fd = sys.stdin.fileno()
 # --- herdr ----------------------------------------------------------------
 
 def call(method, params=None):
-    """Ein Request über die herdr Socket-API (newline-delimited JSON)."""
+    """One request over the herdr socket API (newline-delimited JSON)."""
     with socket.socket(socket.AF_UNIX) as s:
         s.connect(SOCKET)
         s.sendall((json.dumps({"id": "omni", "method": method, "params": params or {}}) + "\n").encode())
@@ -30,7 +30,7 @@ def call(method, params=None):
             data += chunk
     reply = json.loads(data)
     if "error" in reply:
-        raise RuntimeError(reply["error"].get("message", "herdr-Fehler"))
+        raise RuntimeError(reply["error"].get("message", "herdr error"))
     return reply["result"]
 
 
@@ -39,8 +39,8 @@ def short_path(path):
     return "~" + path[len(home):] if path and path.startswith(home) else path or ""
 
 
-# --- Einträge ---------------------------------------------------------------
-# Jeder Eintrag: kind, title, subtitle, keywords, run (Funktion ohne Argumente).
+# --- Entries -------------------------------------------------------------
+# Every entry: kind, title, subtitle, keywords, run (a function without arguments).
 
 def entry(kind, title, subtitle, run, keywords=""):
     return {"kind": kind, "title": title, "subtitle": subtitle, "run": run,
@@ -67,14 +67,14 @@ def collect():
         items.append(entry("agent", task, f"{a['agent']} · {a['agent_status']} · {where(a)}",
                            focus("pane.focus", "pane_id", a["pane_id"]), short_path(a.get("cwd"))))
     for w in snap["workspaces"]:
-        items.append(entry("space", w["label"], f"{w['tab_count']} Tabs · {w['pane_count']} Panes",
+        items.append(entry("space", w["label"], f"{w['tab_count']} tabs · {w['pane_count']} panes",
                            focus("workspace.focus", "workspace_id", w["workspace_id"])))
     for t in snap["tabs"]:
         items.append(entry("tab", t["label"], where(t), focus("tab.focus", "tab_id", t["tab_id"])))
     for p in snap["panes"]:
         if p["pane_id"] in agent_panes:
-            continue  # steht schon als Agent drin
-        # Shell-Panes heißen meist wie der Prompt (user@host:~/…), der Ordner sagt mehr.
+            continue  # already listed as an agent
+        # Shell panes are usually titled like the prompt (user@host:~/…); the directory says more.
         cwd = short_path(p.get("foreground_cwd") or p.get("cwd"))
         items.append(entry("pane", cwd, where(p), focus("pane.focus", "pane_id", p["pane_id"]),
                            p.get("terminal_title_stripped", "")))
@@ -102,26 +102,26 @@ def toolbox_entries(root):
 
 
 def run_tool(script, key):
-    """Toolbox-Tool direkt in diesem Popup starten."""
+    """Run a toolbox tool right inside this popup."""
     termios.tcsetattr(fd, termios.TCSADRAIN, ORIGINAL)
     subprocess.run(["python3", script, "--tool", key])
 
 
 def invoke_later(ref):
-    # Plugin-Aktionen öffnen oft selbst ein Popup; das geht erst, wenn unseres zu ist.
+    # Plugin actions often open a popup themselves, which only works once ours is closed.
     subprocess.Popen(["sh", "-c", 'sleep 0.3; exec "$0" plugin action invoke "$1"', HERDR, ref],
                      start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-# --- Suche ------------------------------------------------------------------
+# --- Search --------------------------------------------------------------
 
 def score_word(word, text):
-    """Fuzzy-Score eines Suchworts: None = kein Treffer, höher = besser."""
+    """Fuzzy score of one search word: None = no match, higher = better."""
     i = text.find(word)
-    if i >= 0:  # zusammenhängender Treffer, am Wortanfang am besten
+    if i >= 0:  # contiguous match, best at a word start
         return 100 + (50 if i == 0 or not text[i - 1].isalnum() else 0) - i * 0.1
     score, pos, prev = 0, 0, -2
-    for ch in word:  # sonst: alle Zeichen in Reihenfolge, Bonus für Folgen und Wortanfänge
+    for ch in word:  # otherwise: all chars in order, bonus for runs and word starts
         i = text.find(ch, pos)
         if i < 0:
             return None
@@ -144,7 +144,7 @@ def search(items, query):
             hit = title_hit if title_hit is not None else score_word(word, item["haystack"])
             if hit is None:
                 break
-            total += hit + (title_hit or 0)  # Treffer im Titel zählen doppelt
+            total += hit + (title_hit or 0)  # title matches count double
         else:
             ranked.append((-total, order, item))
     return [item for *_, item in sorted(ranked, key=lambda r: (r[0], r[1]))]
@@ -167,12 +167,12 @@ def draw(query, results, selected, error=""):
     for i, item in enumerate(results[top:top + visible], start=top):
         badge = f"{KIND_COLORS[item['kind']]}{item['kind']:<6}{RESET}"
         title = item["title"][:cols - 10]
-        subtitle = item["subtitle"][:max(cols - 12 - len(title), 0)]  # nicht umbrechen
+        subtitle = item["subtitle"][:max(cols - 12 - len(title), 0)]  # never wrap
         line = f" {badge} {title}  {DIM}{subtitle}{RESET}"
         lines.append(f"{REV}{line}{RESET}" if i == selected else line)
     if not results:
-        lines.append(f"  {DIM}keine Treffer{RESET}")
-    footer = error or f"{DIM}↑↓ wählen · Enter öffnen · Esc/alt+space schließen{RESET}"
+        lines.append(f"  {DIM}no matches{RESET}")
+    footer = error or f"{DIM}↑↓ select · Enter open · Esc/alt+space close{RESET}"
     sys.stdout.write("\033[H\033[2J" + "\n".join(lines) + f"\033[{rows};1H" + footer)
     sys.stdout.flush()
 
@@ -192,7 +192,7 @@ def main():
                 try:
                     results[selected]["run"]()
                     return
-                except Exception as e:  # z. B. Pane inzwischen geschlossen
+                except Exception as e:  # e.g. the pane was closed meanwhile
                     error = f"\033[31m✗ {e}{RESET}"
         elif key in UP_KEYS:
             selected = max(selected - 1, 0)
@@ -202,7 +202,7 @@ def main():
             query, selected = query[:-1], 0
         elif key == "\x15":  # ctrl+u
             query, selected = "", 0
-        elif key.isprintable():  # auch mehrere Zeichen bei schnellem Tippen / Paste
+        elif key.isprintable():  # may be several chars when typing fast or pasting
             query, selected = query + key, 0
 
 
