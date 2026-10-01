@@ -58,8 +58,6 @@ description = "tools"
 
 Then run `herdr server reload-config`.
 
-Why not double-Shift like JetBrains? Terminals never see a bare Shift press. If you want it anyway, use a macOS tool such as Karabiner-Elements to map double-Shift to alt+space.
-
 ## Tests
 
 ```sh
