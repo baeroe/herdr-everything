@@ -1,20 +1,34 @@
-id = "herdr-omni"
-name = "Omni"
-version = "0.1.0"
+id = "herdr-everything"
+name = "Everything"
+version = "0.2.0"
 min_herdr_version = "0.8.0"
-description = "Eine Suche über Agents, Spaces, Tabs, Panes, Toolbox-Tools und Plugin-Aktionen. Tippen, Enter."
+description = "Search everywhere in herdr: agents, spaces, tabs, panes, herdr commands, plugin actions and built-in dev tools (JSON, random string, UUID, lorem ipsum)."
 platforms = ["macos", "linux"]
 
 [[panes]]
-id = "omni"
-title = "Omni"
+id = "search"
+title = "Everything"
 placement = "popup"
 width = "70%"
 height = "60%"
-command = ["python3", "omni.py"]
+command = ["python3", "everything.py"]
+
+[[panes]]
+id = "tools"
+title = "Tools"
+placement = "popup"
+width = "80%"
+height = "80%"
+command = ["python3", "tools.py"]
 
 [[actions]]
 id = "open"
-title = "Omni öffnen"
-description = "Suche über alles in herdr öffnen."
-command = ["sh", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin herdr-omni --entrypoint omni --focus"]
+title = "Search everywhere"
+description = "Open the search across everything in herdr."
+command = ["sh", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin herdr-everything --entrypoint search --focus"]
+
+[[actions]]
+id = "tools"
+title = "Open tools"
+description = "Open the dev tools menu (JSON, random string, UUID, lorem ipsum)."
+command = ["sh", "-c", "exec \"${HERDR_BIN_PATH:-herdr}\" plugin pane open --plugin herdr-everything --entrypoint tools --focus"]
