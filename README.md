@@ -2,6 +2,8 @@
 
 "Search Everywhere" for [herdr](https://herdr.dev), inspired by JetBrains IDEs, with a few dev tools built in. Press **alt+space**, type a few letters and hit **Enter**.
 
+![Search everywhere: the query "api" finds the workspace, its tabs and panes, an agent, herdr commands, plugin actions and a tool](docs/screenshots/search.png)
+
 | Kind | Enter does |
 |---|---|
 | `agent` | Focus the agent's pane |
@@ -19,6 +21,12 @@ Keys: **↑↓** or **ctrl+p/n** select · **Enter** open · **alt+backspace / c
 ## Tools
 
 Things you would otherwise open a website for. The result is copied to the clipboard.
+
+<p>
+  <img src="docs/screenshots/tools.png" alt="The tools menu" width="49%">
+  <img src="docs/screenshots/random.png" alt="Random String with symbols and a length of 40" width="49%">
+</p>
+<p><em>The tools menu (left) and Random String with symbols and a length of 40 (right).</em></p>
 
 | Key | Tool | |
 |---|---|---|
@@ -64,6 +72,14 @@ Then run `herdr server reload-config`.
 python3 test_search.py      # search ranking and commands, no herdr needed (runs in CI)
 python3 test_everything.py  # drives the search UI in a pseudo-terminal against a running herdr
 python3 test_tools.py       # drives the tools in a pseudo-terminal (macOS clipboard)
+```
+
+## Screenshots
+
+The screenshots are generated with [VHS](https://github.com/charmbracelet/vhs) from the tapes in `docs/tapes/`, against a throwaway herdr server with demo data (your own herdr is not touched):
+
+```sh
+bash docs/screenshots.sh          # all, or e.g. `bash docs/screenshots.sh search`
 ```
 
 ## License
